@@ -9,8 +9,24 @@ class Capture():
         self.c = cv2.VideoCapture(0)
         
         self.w=int(self.c.get(cv2.CAP_PROP_FRAME_WIDTH ))
+        print ("Width = ", self.w)
+        
         self.h=int(self.c.get(cv2.CAP_PROP_FRAME_HEIGHT ))
+        print ("Height = ", self.h)
+        
+        self.brightness = int(self.c.get(cv2.CAP_PROP_BRIGHTNESS))
+        print("Brightness = " ,self.brightness)
+        
+        self.brightness = int(self.c.get(cv2.CAP_PROP_FPS))
+        print("FPS = " ,self.brightness)
+        
+        self.exposure = float(self.c.get(cv2.CAP_PROP_EXPOSURE))
+        print("Exposure = " ,self.exposure)
+        
         self.video_writer = cv2.VideoWriter("Video.avi", cv2.VideoWriter_fourcc(*'XVID'), 10, (self.w, self.h))
+
+    def SetBrightness(self,value):
+        self.c.set(cv2.CAP_PROP_BRIGHTNESS, value)
 
     def startCamera(self):
         print ("Start Camera")
@@ -34,11 +50,11 @@ class Capture():
         self.capturing = True
         self.recording = False
         self.video_writer.release()
-        
 
     def quitApp(self):
         print ("Quit")
         cap = self.c
+        self.video_writer.release()
         cv2.destroyAllWindows()
         cap.release()
         QtCore.QCoreApplication.quit()
@@ -63,16 +79,32 @@ class Window(QtWidgets.QWidget):
 
         self.quit_button = QtWidgets.QPushButton('Quit',self)
         self.quit_button.clicked.connect(self.capture.quitApp)
+        
+        self.l1 = QtWidgets.QLabel('Brightness = ')
+        
+        self.s1 = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.s1.setMinimum(0)
+        self.s1.setMaximum(100)
+        self.s1.setValue(0)
+        self.s1.setTickInterval(5)
+        self.s1.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.s1.valueChanged.connect(self.v_change)
 
         vbox = QtWidgets.QVBoxLayout(self)
         vbox.addWidget(self.camera_button)
         vbox.addWidget(self.start_button)
         vbox.addWidget(self.end_button)
         vbox.addWidget(self.quit_button)
+        vbox.addWidget(self.l1)
+        vbox.addWidget(self.s1)
 
         self.setLayout(vbox)
         self.setGeometry(100,100,200,200)
         self.show()
+        
+    def v_change(self):
+        #print(int(self.s1.value()))
+        self.capture.SetBrightness(int(self.s1.value()))
 
 
 if __name__ == '__main__':
