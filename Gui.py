@@ -4,16 +4,20 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 
 class Capture():
     def __init__(self):
-        self.capturing = False
         self.recording = False
-        self.c = cv2.VideoCapture(0)
+        self.c = cv2.VideoCapture(1)
+        self.w = int(self.c.get(cv2.CAP_PROP_FRAME_WIDTH ))
+        #print ("Width = ", self.w)
+        self.h = int(self.c.get(cv2.CAP_PROP_FRAME_HEIGHT ))
+       # print ("Height = ", self.h)
+        #Define Video Writer
+        self.video_writer = cv2.VideoWriter("Video.avi", cv2.VideoWriter_fourcc(*'XVID'), 10, (self.w, self.h))
+        self.Config()
         
+    def Config(self):
         #Get Camera Settings
         print("-----Camera Settings------")
-        self.w = int(self.c.get(cv2.CAP_PROP_FRAME_WIDTH ))
-        print ("Width = ", self.w)
-        self.h = int(self.c.get(cv2.CAP_PROP_FRAME_HEIGHT ))
-        print ("Height = ", self.h)
+
         self.brightness = float(self.c.get(cv2.CAP_PROP_BRIGHTNESS))
         print("Brightness = " ,self.brightness)
         self.brightness = int(self.c.get(cv2.CAP_PROP_FPS))
@@ -41,12 +45,8 @@ class Capture():
         '''
         print("---------------------------")
         
-        
-        #Set Default Values
-        self.c.set(cv2.CAP_PROP_BRIGHTNESS, 50)
-        
-        #Define Video Writer
-        self.video_writer = cv2.VideoWriter("Video.avi", cv2.VideoWriter_fourcc(*'XVID'), 10, (self.w, self.h))
+        #Set Camera Default Values
+        #self.c.set(cv2.CAP_PROP_BRIGHTNESS, 50)
 
     def SetBrightness(self,value):
         self.c.set(cv2.CAP_PROP_BRIGHTNESS, value)
@@ -76,6 +76,7 @@ class Capture():
 
     def quitApp(self):
         print ("Quit")
+        self.capturing = False
         cap = self.c
         self.video_writer.release()
         cv2.destroyAllWindows()
@@ -105,13 +106,19 @@ class Window(QtWidgets.QWidget):
         
         self.l1 = QtWidgets.QLabel('Brightness = ')
         
-        self.s1 = QtWidgets.QSlider(QtCore.Qt.Horizontal)
-        self.s1.setMinimum(0)
-        self.s1.setMaximum(100)
-        self.s1.setValue(50)
-        self.s1.setTickInterval(5)
-        self.s1.setTickPosition(QtWidgets.QSlider.TicksBelow)
-        self.s1.valueChanged.connect(self.v_change)
+        #Slider Brightness
+        self.slider_brightness = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.slider_brightness.setMinimum(0)
+        self.slider_brightness.setMaximum(100)
+        self.slider_brightness.setValue(60)
+        self.capture.SetBrightness(self.slider_brightness.value()/100) # set value
+        self.slider_brightness.setTickInterval(5)
+        self.slider_brightness.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.slider_brightness.valueChanged.connect(self.v_change)
+        
+        #Slider Exposure
+        
+        #Slider Exposure
 
         vbox = QtWidgets.QVBoxLayout(self)
         vbox.addWidget(self.camera_button)
@@ -119,15 +126,15 @@ class Window(QtWidgets.QWidget):
         vbox.addWidget(self.end_button)
         vbox.addWidget(self.quit_button)
         vbox.addWidget(self.l1)
-        vbox.addWidget(self.s1)
+        vbox.addWidget(self.slider_brightness)
 
         self.setLayout(vbox)
         self.setGeometry(100,100,200,200)
         self.show()
         
     def v_change(self):
-        #print(int(self.s1.value()))
-        self.capture.SetBrightness(int(self.s1.value())/100)
+        #print(int(self.slider_brightness.value()))
+        self.capture.SetBrightness(int(self.slider_brightness.value())/100)
 
 
 if __name__ == '__main__':
