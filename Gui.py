@@ -8,21 +8,44 @@ class Capture():
         self.recording = False
         self.c = cv2.VideoCapture(0)
         
-        self.w=int(self.c.get(cv2.CAP_PROP_FRAME_WIDTH ))
+        #Get Camera Settings
+        print("-----Camera Settings------")
+        self.w = int(self.c.get(cv2.CAP_PROP_FRAME_WIDTH ))
         print ("Width = ", self.w)
-        
-        self.h=int(self.c.get(cv2.CAP_PROP_FRAME_HEIGHT ))
+        self.h = int(self.c.get(cv2.CAP_PROP_FRAME_HEIGHT ))
         print ("Height = ", self.h)
-        
-        self.brightness = int(self.c.get(cv2.CAP_PROP_BRIGHTNESS))
+        self.brightness = float(self.c.get(cv2.CAP_PROP_BRIGHTNESS))
         print("Brightness = " ,self.brightness)
-        
         self.brightness = int(self.c.get(cv2.CAP_PROP_FPS))
         print("FPS = " ,self.brightness)
-        
         self.exposure = float(self.c.get(cv2.CAP_PROP_EXPOSURE))
         print("Exposure = " ,self.exposure)
+        self.contrast = int(self.c.get(cv2.CAP_PROP_CONTRAST))
+        print("Contrast = " ,self.contrast)
+        self.saturation = int(self.c.get(cv2.CAP_PROP_SATURATION))
+        print("Saturation = " ,self.saturation)
+        self.gain = int(self.c.get(cv2.CAP_PROP_GAIN))
+        print("Gain = " ,self.gain)
         
+        print(self.c.get(cv2.CAP_PROP_AUTO_EXPOSURE))
+        self.c.set(cv2.CAP_PROP_BRIGHTNESS, 10)
+        '''
+        self.sharpness = int(self.c.get(cv2.CAP_PROP_SHARPNESS))
+        print("Sharpnesss = " ,self.sharpness)
+        self.gamma = int(self.c.get(cv2.CAP_PROP_GAMMA))
+        print("Gamma = " ,self.gamma)
+        self.whitebalanceblue = int(self.c.get(cv2.CAP_PROP_WHITE_BALANCE_BLUE_U))
+        print("White Balance Blue = " ,self.whitebalanceblue)
+        self.whitebalancered = int(self.c.get(cv2.CAP_PROP_WHITE_BALANCE_RED_V))
+        print("White Balance Red = " ,self.whitebalancered)
+        '''
+        print("---------------------------")
+        
+        
+        #Set Default Values
+        self.c.set(cv2.CAP_PROP_BRIGHTNESS, 50)
+        
+        #Define Video Writer
         self.video_writer = cv2.VideoWriter("Video.avi", cv2.VideoWriter_fourcc(*'XVID'), 10, (self.w, self.h))
 
     def SetBrightness(self,value):
@@ -85,7 +108,7 @@ class Window(QtWidgets.QWidget):
         self.s1 = QtWidgets.QSlider(QtCore.Qt.Horizontal)
         self.s1.setMinimum(0)
         self.s1.setMaximum(100)
-        self.s1.setValue(0)
+        self.s1.setValue(50)
         self.s1.setTickInterval(5)
         self.s1.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.s1.valueChanged.connect(self.v_change)
@@ -104,7 +127,7 @@ class Window(QtWidgets.QWidget):
         
     def v_change(self):
         #print(int(self.s1.value()))
-        self.capture.SetBrightness(int(self.s1.value()))
+        self.capture.SetBrightness(int(self.s1.value())/100)
 
 
 if __name__ == '__main__':
