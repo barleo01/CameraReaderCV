@@ -7,52 +7,33 @@ class Capture():
         self.recording = False
         self.c = cv2.VideoCapture(0)
         self.w = int(self.c.get(cv2.CAP_PROP_FRAME_WIDTH ))
-        #print ("Width = ", self.w)
+        print ("Width = ", self.w)
         self.h = int(self.c.get(cv2.CAP_PROP_FRAME_HEIGHT ))
-       # print ("Height = ", self.h)
+        print ("Height = ", self.h)
+        
         #Define Video Writer
-        self.video_writer = cv2.VideoWriter("Video.avi", cv2.VideoWriter_fourcc(*'XVID'), 10, (self.w, self.h))
-        self.Config()
+        self.video_writer = cv2.VideoWriter("Video.avi", cv2.VideoWriter_fourcc(*'XVID'), 30, (self.w, self.h))
         
-    def Config(self):
-        #Get Camera Settings
-        print("-----Camera Settings------")
 
-        self.brightness = float(self.c.get(cv2.CAP_PROP_BRIGHTNESS))
-        print("Brightness = " ,self.brightness)
-        self.brightness = int(self.c.get(cv2.CAP_PROP_FPS))
-        print("FPS = " ,self.brightness)
-        self.exposure = float(self.c.get(cv2.CAP_PROP_EXPOSURE))
-        print("Exposure = " ,self.exposure)
-        self.contrast = int(self.c.get(cv2.CAP_PROP_CONTRAST))
-        print("Contrast = " ,self.contrast)
-        self.saturation = int(self.c.get(cv2.CAP_PROP_SATURATION))
-        print("Saturation = " ,self.saturation)
-        self.gain = int(self.c.get(cv2.CAP_PROP_GAIN))
-        print("Gain = " ,self.gain)
-        
-        print(self.c.get(cv2.CAP_PROP_AUTO_EXPOSURE))
-        self.c.set(cv2.CAP_PROP_BRIGHTNESS, 10)
-        '''
-        self.sharpness = int(self.c.get(cv2.CAP_PROP_SHARPNESS))
-        print("Sharpnesss = " ,self.sharpness)
-        self.gamma = int(self.c.get(cv2.CAP_PROP_GAMMA))
-        print("Gamma = " ,self.gamma)
-        self.whitebalanceblue = int(self.c.get(cv2.CAP_PROP_WHITE_BALANCE_BLUE_U))
-        print("White Balance Blue = " ,self.whitebalanceblue)
-        self.whitebalancered = int(self.c.get(cv2.CAP_PROP_WHITE_BALANCE_RED_V))
-        print("White Balance Red = " ,self.whitebalancered)
-        '''
-        print("---------------------------")
-        
-        #Set Camera Default Values
-        #self.c.set(cv2.CAP_PROP_BRIGHTNESS, 50)
 
     def SetBrightness(self,value):
         self.c.set(cv2.CAP_PROP_BRIGHTNESS, value)
         
     def SetConstrast(self,value):
         self.c.set(cv2.CAP_PROP_CONTRAST, value)
+    
+    def SetExposure(self,value):
+        self.c.set(cv2.CAP_PROP_EXPOSURE, value)
+        
+    def SetSaturation(self,value):
+        self.c.set(cv2.CAP_PROP_SATURATION, value)
+        
+    def SetGain(self,value):
+        self.c.set(cv2.CAP_PROP_GAIN, value)
+        
+    def SetFPS(self,value):
+        self.c.set(cv2.CAP_PROP_FPS, value)
+        
 
     def startCamera(self):
         print ("Start Camera")
@@ -95,6 +76,16 @@ class Window(QtWidgets.QWidget):
         self.setWindowTitle('Control Panel')
 
         self.capture = Capture()
+        
+        #Get Camera Settings
+        print("-----Camera default Settings------")
+        print('Brightness = ' + str(self.capture.c.get(cv2.CAP_PROP_BRIGHTNESS)))
+        print('Contrast = ' + str(self.capture.c.get(cv2.CAP_PROP_BRIGHTNESS)))
+        print('Exposure = ' + str(self.capture.c.get(cv2.CAP_PROP_BRIGHTNESS)))
+        print('Saturation = ' + str(self.capture.c.get(cv2.CAP_PROP_BRIGHTNESS)))
+        print('Gain = ' + str(self.capture.c.get(cv2.CAP_PROP_BRIGHTNESS)))
+        print('FPS = ' + str(self.capture.c.get(cv2.CAP_PROP_BRIGHTNESS)))
+        
         self.camera_button = QtWidgets.QPushButton('Start Camera',self)
         self.camera_button.clicked.connect(self.capture.startCamera)
 
@@ -110,13 +101,17 @@ class Window(QtWidgets.QWidget):
         #Labels
         self.label_brightness = QtWidgets.QLabel()
         self.label_constrast = QtWidgets.QLabel()
+        self.label_exposure = QtWidgets.QLabel()
+        self.label_saturation = QtWidgets.QLabel()
+        self.label_gain = QtWidgets.QLabel()
+        self.label_fps = QtWidgets.QLabel()
         
         #Slider Brightness
         self.slider_brightness = QtWidgets.QSlider(QtCore.Qt.Horizontal)
         self.slider_brightness.setMinimum(0)
         self.slider_brightness.setMaximum(100)
-        self.slider_brightness.setValue(60)
         self.slider_brightness.setTickInterval(5)
+        self.slider_brightness.setValue(self.capture.c.get(cv2.CAP_PROP_BRIGHTNESS))
         self.assign_brightness_value()
         self.slider_brightness.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.slider_brightness.valueChanged.connect(self.assign_brightness_value)
@@ -125,11 +120,51 @@ class Window(QtWidgets.QWidget):
         self.slider_constrast = QtWidgets.QSlider(QtCore.Qt.Horizontal)
         self.slider_constrast.setMinimum(0)
         self.slider_constrast.setMaximum(100)
-        self.slider_constrast.setValue(60)
         self.slider_constrast.setTickInterval(5)
+        self.slider_constrast.setValue(self.capture.c.get(cv2.CAP_PROP_CONTRAST))
         self.assign_constrast_value()
         self.slider_constrast.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.slider_constrast.valueChanged.connect(self.assign_constrast_value)
+        
+        #Slider exposure
+        self.slider_exposure = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.slider_exposure.setMinimum(0)
+        self.slider_exposure.setMaximum(100)
+        self.slider_exposure.setTickInterval(5)
+        self.slider_exposure.setValue(self.capture.c.get(cv2.CAP_PROP_EXPOSURE))
+        self.assign_exposure_value()
+        self.slider_exposure.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.slider_exposure.valueChanged.connect(self.assign_exposure_value)
+        
+        #Slider saturation
+        self.slider_saturation = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.slider_saturation.setMinimum(0)
+        self.slider_saturation.setMaximum(100)
+        self.slider_saturation.setTickInterval(5)
+        self.slider_saturation.setValue(self.capture.c.get(cv2.CAP_PROP_SATURATION))
+        self.assign_saturation_value()
+        self.slider_saturation.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.slider_saturation.valueChanged.connect(self.assign_saturation_value)
+        
+        #Slider gain
+        self.slider_gain = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.slider_gain.setMinimum(0)
+        self.slider_gain.setMaximum(100)
+        self.slider_gain.setTickInterval(5)
+        self.slider_gain.setValue(self.capture.c.get(cv2.CAP_PROP_GAIN))
+        self.assign_gain_value()
+        self.slider_gain.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.slider_gain.valueChanged.connect(self.assign_gain_value)
+        
+        #Slider fps
+        self.slider_fps = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.slider_fps.setMinimum(1)
+        self.slider_fps.setMaximum(30)
+        self.slider_fps.setTickInterval(1)
+        self.slider_fps.setValue(self.capture.c.get(cv2.CAP_PROP_FPS))
+        self.assign_fps_value()
+        self.slider_fps.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.slider_fps.valueChanged.connect(self.assign_fps_value)
         
         #Vertical Box
         vbox = QtWidgets.QVBoxLayout(self)
@@ -141,6 +176,14 @@ class Window(QtWidgets.QWidget):
         vbox.addWidget(self.slider_brightness)
         vbox.addWidget(self.label_constrast)
         vbox.addWidget(self.slider_constrast)
+        vbox.addWidget(self.label_exposure)
+        vbox.addWidget(self.slider_exposure)
+        vbox.addWidget(self.label_saturation)
+        vbox.addWidget(self.slider_saturation)
+        vbox.addWidget(self.label_gain)
+        vbox.addWidget(self.slider_gain)
+        vbox.addWidget(self.label_fps)
+        vbox.addWidget(self.slider_fps)
 
         self.setLayout(vbox)
         self.setGeometry(100,100,200,200)
@@ -155,6 +198,26 @@ class Window(QtWidgets.QWidget):
         #print(int(self.slider_brightness.value()))
         self.capture.SetConstrast(int(self.slider_constrast.value())/100)
         self.label_constrast.setText('Constrast = '+ str(self.slider_constrast.value()/100))
+    
+    def assign_exposure_value(self):
+        #print(int(self.slider_brightness.value()))
+        self.capture.SetExposure(int(self.slider_exposure.value()))
+        self.label_exposure.setText('Exposure = '+ str(self.slider_exposure.value()))
+    
+    def assign_saturation_value(self):
+        #print(int(self.slider_brightness.value()))
+        self.capture.SetSaturation(int(self.slider_saturation.value())/100)
+        self.label_saturation.setText('Saturation = '+ str(self.slider_saturation.value()/100))
+    
+    def assign_gain_value(self):
+        #print(int(self.slider_brightness.value()))
+        self.capture.SetGain(int(self.slider_gain.value())/100)
+        self.label_gain.setText('Gain = '+ str(self.slider_gain.value()/100))
+        
+    def assign_fps_value(self):
+        #print(int(self.slider_brightness.value()))
+        self.capture.SetFPS(int(self.slider_fps.value()))
+        self.label_fps.setText('FPS = '+ str(self.slider_fps.value()))
 
 if __name__ == '__main__':
     import sys
