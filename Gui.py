@@ -5,7 +5,7 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 class Capture():
     def __init__(self):
         self.recording = False
-        self.c = cv2.VideoCapture(1)
+        self.c = cv2.VideoCapture(0)
         self.w = int(self.c.get(cv2.CAP_PROP_FRAME_WIDTH ))
         #print ("Width = ", self.w)
         self.h = int(self.c.get(cv2.CAP_PROP_FRAME_HEIGHT ))
@@ -50,6 +50,9 @@ class Capture():
 
     def SetBrightness(self,value):
         self.c.set(cv2.CAP_PROP_BRIGHTNESS, value)
+        
+    def SetConstrast(self,value):
+        self.c.set(cv2.CAP_PROP_CONTRAST, value)
 
     def startCamera(self):
         print ("Start Camera")
@@ -60,7 +63,7 @@ class Capture():
             if (self.recording):
                 self.video_writer.write(frame)
             cv2.imshow("Capture", frame)
-            cv2.waitKey(5)
+            cv2.waitKey(1)
         cv2.destroyAllWindows()
         
     def startRecording(self):
@@ -104,41 +107,58 @@ class Window(QtWidgets.QWidget):
         self.quit_button = QtWidgets.QPushButton('Quit',self)
         self.quit_button.clicked.connect(self.capture.quitApp)
         
-        self.l1 = QtWidgets.QLabel('Brightness = ')
+        #Labels
+        self.label_brightness = QtWidgets.QLabel()
+        self.label_constrast = QtWidgets.QLabel()
         
         #Slider Brightness
         self.slider_brightness = QtWidgets.QSlider(QtCore.Qt.Horizontal)
         self.slider_brightness.setMinimum(0)
         self.slider_brightness.setMaximum(100)
         self.slider_brightness.setValue(60)
-        self.capture.SetBrightness(self.slider_brightness.value()/100) # set value
         self.slider_brightness.setTickInterval(5)
+        self.assign_brightness_value()
         self.slider_brightness.setTickPosition(QtWidgets.QSlider.TicksBelow)
-        self.slider_brightness.valueChanged.connect(self.v_change)
+        self.slider_brightness.valueChanged.connect(self.assign_brightness_value)
         
-        #Slider Exposure
+        #Slider constrast
+        self.slider_constrast = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.slider_constrast.setMinimum(0)
+        self.slider_constrast.setMaximum(100)
+        self.slider_constrast.setValue(60)
+        self.slider_constrast.setTickInterval(5)
+        self.assign_constrast_value()
+        self.slider_constrast.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.slider_constrast.valueChanged.connect(self.assign_constrast_value)
         
-        #Slider Exposure
-
+        #Vertical Box
         vbox = QtWidgets.QVBoxLayout(self)
         vbox.addWidget(self.camera_button)
         vbox.addWidget(self.start_button)
         vbox.addWidget(self.end_button)
         vbox.addWidget(self.quit_button)
-        vbox.addWidget(self.l1)
+        vbox.addWidget(self.label_brightness)
         vbox.addWidget(self.slider_brightness)
+        vbox.addWidget(self.label_constrast)
+        vbox.addWidget(self.slider_constrast)
 
         self.setLayout(vbox)
         self.setGeometry(100,100,200,200)
         self.show()
         
-    def v_change(self):
+    def assign_brightness_value(self):
         #print(int(self.slider_brightness.value()))
         self.capture.SetBrightness(int(self.slider_brightness.value())/100)
+        self.label_brightness.setText('Brightness = '+ str(self.slider_brightness.value()/100))
 
+    def assign_constrast_value(self):
+        #print(int(self.slider_brightness.value()))
+        self.capture.SetConstrast(int(self.slider_constrast.value())/100)
+        self.label_constrast.setText('Constrast = '+ str(self.slider_constrast.value()/100))
 
 if __name__ == '__main__':
     import sys
     app = QtWidgets.QApplication(sys.argv)
     window = Window()
+    #cv2.destroyAllWindows()
     sys.exit(app.exec_())
