@@ -1,6 +1,8 @@
 import cv2
 from PyQt5 import QtGui, QtCore, QtWidgets
 import Configuration
+from PyQt5.QtCore import QSettings
+import CameraParam
 
 
 class Capture():
@@ -14,26 +16,20 @@ class Capture():
         
         #Define Video Writer
         self.video_writer = cv2.VideoWriter("Video.avi", cv2.VideoWriter_fourcc(*'XVID'), 30, (self.w, self.h))
-        
 
-
-    def SetBrightness(self,value):
-        self.c.set(cv2.CAP_PROP_BRIGHTNESS, value)
-        
-    def SetConstrast(self,value):
-        self.c.set(cv2.CAP_PROP_CONTRAST, value)
-    
-    def SetExposure(self,value):
-        self.c.set(cv2.CAP_PROP_EXPOSURE, value)
-        
-    def SetSaturation(self,value):
-        self.c.set(cv2.CAP_PROP_SATURATION, value)
-        
-    def SetGain(self,value):
-        self.c.set(cv2.CAP_PROP_GAIN, value)
-        
-    def SetFPS(self,value):
-        self.c.set(cv2.CAP_PROP_FPS, value)
+    def SetValueToCam(self,value, cam_property):
+        if cam_property == 'Brightness':
+            self.c.set(cv2.CAP_PROP_BRIGHTNESS, value)
+        if cam_property == 'Contrast':
+            self.c.set(cv2.CAP_PROP_CONTRAST, value)
+        if cam_property == 'Exposure':
+            self.c.set(cv2.CAP_PROP_EXPOSURE, value)
+        if cam_property == 'Saturation':
+            self.c.set(cv2.CAP_PROP_SATURATION, value)
+        if cam_property == 'Gain':
+            self.c.set(cv2.CAP_PROP_GAIN, value)
+        if cam_property == 'FPS':
+            self.c.set(cv2.CAP_PROP_FPS, value)
         
 
     def startCamera(self):
@@ -45,7 +41,7 @@ class Capture():
             if (self.recording):
                 self.video_writer.write(frame)
             cv2.imshow("Capture", frame)
-            cv2.waitKey(1)
+            cv2.waitKey(2)
         cv2.destroyAllWindows()
         
     def startRecording(self):
@@ -67,6 +63,7 @@ class Capture():
         cv2.destroyAllWindows()
         cap.release()
         Configuration.SaveConfig(CameraParameters)
+        
         QtCore.QCoreApplication.quit()
 
 
@@ -78,7 +75,6 @@ class Window(QtWidgets.QWidget):
         self.setWindowTitle('Control Panel')
 
         self.capture = Capture()
-    
 
         self.camera_button = QtWidgets.QPushButton('Start Camera',self)
         self.camera_button.clicked.connect(self.capture.startCamera)
@@ -106,19 +102,19 @@ class Window(QtWidgets.QWidget):
         self.slider_brightness.setMaximum(100)
         self.slider_brightness.setTickInterval(5)
         self.slider_brightness.setValue(int(CameraParameters['Brightness']))
-        self.assign_brightness_value()
+        self.AssignNewSliderValue(self, 'Brightness')
         self.slider_brightness.setTickPosition(QtWidgets.QSlider.TicksBelow)
-        self.slider_brightness.valueChanged.connect(self.assign_brightness_value)
+        self.slider_brightness.valueChanged.connect(lambda: self.AssignNewSliderValue(self.slider_brightness, 'Brightness'))
         
         #Slider constrast
-        self.slider_constrast = QtWidgets.QSlider(QtCore.Qt.Horizontal)
-        self.slider_constrast.setMinimum(0)
-        self.slider_constrast.setMaximum(100)
-        self.slider_constrast.setTickInterval(5)
-        self.slider_constrast.setValue(int(CameraParameters['Contrast']))
-        self.assign_constrast_value()
-        self.slider_constrast.setTickPosition(QtWidgets.QSlider.TicksBelow)
-        self.slider_constrast.valueChanged.connect(self.assign_constrast_value)
+        self.slider_contrast = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.slider_contrast.setMinimum(0)
+        self.slider_contrast.setMaximum(100)
+        self.slider_contrast.setTickInterval(5)
+        self.slider_contrast.setValue(int(CameraParameters['Contrast']))
+        self.AssignNewSliderValue(self, 'Contrast')
+        self.slider_contrast.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.slider_contrast.valueChanged.connect(lambda: self.AssignNewSliderValue(self.slider_contrast, 'Contrast'))
         
         #Slider exposure
         self.slider_exposure = QtWidgets.QSlider(QtCore.Qt.Horizontal)
@@ -126,9 +122,9 @@ class Window(QtWidgets.QWidget):
         self.slider_exposure.setMaximum(100)
         self.slider_exposure.setTickInterval(5)
         self.slider_exposure.setValue(int(CameraParameters['Exposure']))
-        self.assign_exposure_value()
+        self.AssignNewSliderValue(self, 'Exposure')
         self.slider_exposure.setTickPosition(QtWidgets.QSlider.TicksBelow)
-        self.slider_exposure.valueChanged.connect(self.assign_exposure_value)
+        self.slider_exposure.valueChanged.connect(lambda: self.AssignNewSliderValue(self.slider_exposure, 'Exposure'))
         
         #Slider saturation
         self.slider_saturation = QtWidgets.QSlider(QtCore.Qt.Horizontal)
@@ -136,9 +132,9 @@ class Window(QtWidgets.QWidget):
         self.slider_saturation.setMaximum(100)
         self.slider_saturation.setTickInterval(5)
         self.slider_saturation.setValue(int(CameraParameters['Saturation']))
-        self.assign_saturation_value()
+        self.AssignNewSliderValue(self, 'Saturation')
         self.slider_saturation.setTickPosition(QtWidgets.QSlider.TicksBelow)
-        self.slider_saturation.valueChanged.connect(self.assign_saturation_value)
+        self.slider_saturation.valueChanged.connect(lambda: self.AssignNewSliderValue(self.slider_saturation, 'Saturation'))
         
         #Slider gain
         self.slider_gain = QtWidgets.QSlider(QtCore.Qt.Horizontal)
@@ -146,9 +142,9 @@ class Window(QtWidgets.QWidget):
         self.slider_gain.setMaximum(100)
         self.slider_gain.setTickInterval(5)
         self.slider_gain.setValue(int(CameraParameters['Gain']))
-        self.assign_gain_value()
+        self.AssignNewSliderValue(self, 'Gain')
         self.slider_gain.setTickPosition(QtWidgets.QSlider.TicksBelow)
-        self.slider_gain.valueChanged.connect(self.assign_gain_value)
+        self.slider_gain.valueChanged.connect(lambda: self.AssignNewSliderValue(self.slider_gain, 'Gain'))
         
         #Slider fps
         self.slider_fps = QtWidgets.QSlider(QtCore.Qt.Horizontal)
@@ -156,10 +152,10 @@ class Window(QtWidgets.QWidget):
         self.slider_fps.setMaximum(30)
         self.slider_fps.setTickInterval(1)
         self.slider_fps.setValue(int(CameraParameters['FPS']))
-        self.assign_fps_value()
+        self.AssignNewSliderValue(self, 'FPS')
         self.slider_fps.setTickPosition(QtWidgets.QSlider.TicksBelow)
-        self.slider_fps.valueChanged.connect(self.assign_fps_value)
-        
+        self.slider_fps.valueChanged.connect(lambda: self.AssignNewSliderValue(self.slider_fps, 'FPS'))
+ 
         #Vertical Box
         vbox = QtWidgets.QVBoxLayout(self)
         vbox.addWidget(self.camera_button)
@@ -169,7 +165,7 @@ class Window(QtWidgets.QWidget):
         vbox.addWidget(self.label_brightness)
         vbox.addWidget(self.slider_brightness)
         vbox.addWidget(self.label_constrast)
-        vbox.addWidget(self.slider_constrast)
+        vbox.addWidget(self.slider_contrast)
         vbox.addWidget(self.label_exposure)
         vbox.addWidget(self.slider_exposure)
         vbox.addWidget(self.label_saturation)
@@ -183,48 +179,40 @@ class Window(QtWidgets.QWidget):
         self.setGeometry(100,100,200,200)
         self.show()
         
-    def assign_brightness_value(self):
-        #print(int(self.slider_brightness.value()))
-        self.capture.SetBrightness(int(self.slider_brightness.value())/100)
+    def AssignNewSliderValue(self, obj, string):
+        self.capture.SetValueToCam(int(self.slider_brightness.value())/100, 'Brightness')
         CameraParameters['Brightness'] = self.slider_brightness.value() # Update Value in Dictionary
-        self.label_brightness.setText('Brightness = '+ str(self.slider_brightness.value()/100))
-
-    def assign_constrast_value(self):
-        #print(int(self.slider_brightness.value()))
-        self.capture.SetConstrast(int(self.slider_constrast.value())/100)
-        CameraParameters['Contrast'] = self.slider_constrast.value() # Update Value in Dictionary
-        self.label_constrast.setText('Constrast = '+ str(self.slider_constrast.value()/100))
-    
-    def assign_exposure_value(self):
-        #print(int(self.slider_brightness.value()))
-        self.capture.SetExposure(int(self.slider_exposure.value()))
-        CameraParameters['Exposure'] = self.slider_exposure.value() # Update Value in Dictionary
-        self.label_exposure.setText('Exposure = '+ str(self.slider_exposure.value()))
-    
-    def assign_saturation_value(self):
-        #print(int(self.slider_brightness.value()))
-        self.capture.SetSaturation(int(self.slider_saturation.value())/100)
-        CameraParameters['Saturation'] = self.slider_saturation.value() # Update Value in Dictionary
-        self.label_saturation.setText('Saturation = '+ str(self.slider_saturation.value()/100))
-    
-    def assign_gain_value(self):
-        #print(int(self.slider_brightness.value()))
-        self.capture.SetGain(int(self.slider_gain.value())/100)
-        CameraParameters['Gain'] = self.slider_gain.value() # Update Value in Dictionary
-        self.label_gain.setText('Gain = '+ str(self.slider_gain.value()/100))
+        if string == 'Brightness':
+            self.capture.SetValueToCam(self.slider_brightness.value()/100, 'Brightness')
+            self.label_brightness.setText('Brightness = '+ str(self.slider_brightness.value()/100))
+        if string == 'Contrast':
+            self.capture.SetValueToCam(self.slider_contrast.value()/100, 'Contrast')
+            self.label_constrast.setText('Constrast = '+ str(self.slider_contrast.value()/100))
+        if string == 'Exposure':
+            self.capture.SetValueToCam(self.slider_exposure.value()/100, 'Exposure')
+            self.label_exposure.setText('Exposure = '+ str(self.slider_exposure.value()))
+        if string == 'Saturation':
+            self.capture.SetValueToCam(self.slider_saturation.value()/100, 'Saturation')
+            self.label_saturation.setText('Saturation = '+ str(self.slider_saturation.value()/100))
+        if string == 'Gain':
+            self.capture.SetValueToCam(self.slider_gain.value()/100, 'Gain')
+            self.label_gain.setText('Gain = '+ str(self.slider_gain.value()/100))
+        if string == 'FPS':
+            self.capture.SetValueToCam(self.slider_fps.value()/100, 'FPS')
+            self.label_fps.setText('FPS = '+ str(self.slider_fps.value()))
+            
         
-    def assign_fps_value(self):
-        #print(int(self.slider_brightness.value()))
-        self.capture.SetFPS(int(self.slider_fps.value()))
-        CameraParameters['FPS'] = self.slider_fps.value() # Update Value in Dictionary
-        self.label_fps.setText('FPS = '+ str(self.slider_fps.value()))
-
 if __name__ == '__main__':
     import sys
     app = QtWidgets.QApplication(sys.argv)
+    
+    settings = QSettings('foo')
+    print(settings.value('int_value', type=int))
 
+    print("2")
     #Get Camera Settings from Config file
     CameraParameters = Configuration.ReadConfig()
+
     
     window = Window()
     #cv2.destroyAllWindows()

@@ -1,6 +1,7 @@
 import configparser
 import os
 from pathlib import Path
+import CameraParam
 
 
 def CfgToDico():
@@ -24,8 +25,7 @@ def DicoToCfg(CamParam):
     config = configparser.ConfigParser()
     config.read('config.cfg')
     config.add_section('CameraParameters')
-    
-    print(CamParam['Brightness'])
+
     config.set('CameraParameters','brightness_param', str(CamParam['Brightness']))
     config.set('CameraParameters','contrast_param', str(CamParam['Contrast']))
     config.set('CameraParameters','exposure_param', str(CamParam['Exposure']))
@@ -41,11 +41,10 @@ def DicoToCfg(CamParam):
     
 
 def ReadConfig ():
-    
     conffile = Path("config.cfg")
     if conffile.is_file():
         # file exists
-        print("config file present")
+        #print("config file present")
         CameraParameters = CfgToDico()
 
     else:
@@ -62,9 +61,10 @@ def ReadConfig ():
         CameraParameters = CfgToDico()
         
     return CameraParameters
+
         
 def SaveConfig (param):
-    print("SaveConfig")
+    #print("SaveConfig")
     os.remove('config.cfg')
     DicoToCfg(param)
 
