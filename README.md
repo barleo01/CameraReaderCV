@@ -1,3 +1,3 @@
 # CameraReaderCV
 
-Webcam equalizer and recorder with OpenCV and Python
+Webcam equalizer and recorder with OpenCV and Python.
