@@ -1,7 +1,16 @@
+
 import cv2
 from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtCore import QSettings
 import time
+
+EMBEDDED = True
+pumpON = False
+
+if EMBEDDED:
+    import controlHW as ctrlHW
+    
+
 
 class Capture():
     def __init__(self):
@@ -9,10 +18,15 @@ class Capture():
         self.c = cv2.VideoCapture(0) # 0-> first camera (generally webcam), 1 -> second camera,...
         self.w = int(self.c.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.h = int(self.c.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+        #self.pumpON = False
+        
         print(self.w)
         print(self.h)
+        
+        global pumpON
         #Define Video Writer
-        self.video_writer = cv2.VideoWriter("Video.avi", cv2.VideoWriter_fourcc(*'XVID'), 30, (self.w, self.h))
+        #self.video_writer = cv2.VideoWriter("Video.avi", cv2.VideoWriter_fourcc(*'XVID'), 30, (self.w, self.h))
 
     def SetValueToCam(self,value, cam_property):
         if cam_property == 'Brightness':
@@ -42,17 +56,35 @@ class Capture():
         cv2.destroyAllWindows()
         
     def startRecording(self):
-        print("Start Recording")
-        self.capturing = True
-        self.recording = True
-         #Define Video Writer
-        self.video_writer = cv2.VideoWriter(str(time.strftime("%Y%m%d-%H%M%S"))+".avi", cv2.VideoWriter_fourcc(*'XVID'), 30, (self.w, self.h))
+        if self.recording:
+            print ("End Recording")
+            self.capturing = True
+            self.recording = False
+            self.video_writer.release()
+        else:
+            print("Start Recording")
+            self.capturing = True
+            self.recording = True
+            #Define Video Writer
+            self.video_writer = cv2.VideoWriter(str(time.strftime("%Y%m%d-%H%M%S"))+".avi", cv2.VideoWriter_fourcc(*'XVID'), 30, (self.w, self.h))
 
-    def endRecording(self):
-        print ("End Recording")
-        self.capturing = True
-        self.recording = False
-        self.video_writer.release()
+    def pump(self):
+        global pumpON
+        print("Pump Control")
+        
+        if EMBEDDED:
+            print("tet")
+            if pumpON:
+                print("en")
+                pumpON = False
+                ctrlHW.StopPump()
+            else:
+                print("di")
+                pumpON = True
+                ctrlHW.StartPump()
+        else:
+            print("Pump not supported")
+        
     
     
     def quitApp(self):
@@ -85,11 +117,11 @@ class Window(QtWidgets.QWidget):
         self.camera_button = QtWidgets.QPushButton('Start Camera',self)
         self.camera_button.clicked.connect(self.capture.startCamera)
 
-        self.start_button = QtWidgets.QPushButton('Start Record',self)
+        self.start_button = QtWidgets.QPushButton('Record',self)
         self.start_button.clicked.connect(self.capture.startRecording)
 
-        self.end_button = QtWidgets.QPushButton('Stop Record',self)
-        self.end_button.clicked.connect(self.capture.endRecording)
+        self.end_button = QtWidgets.QPushButton('ON/OFF PUMP',self)
+        self.end_button.clicked.connect(self.capture.pump)
 
         self.quit_button = QtWidgets.QPushButton('Quit',self)
         self.quit_button.clicked.connect(self.capture.quitApp)
@@ -233,9 +265,6 @@ class Window(QtWidgets.QWidget):
 if __name__ == '__main__':
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    
-
-
     
     window = Window()
     #cv2.destroyAllWindows()
