@@ -1,14 +1,16 @@
 import cv2
 from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtCore import QSettings
+import time
 
 class Capture():
     def __init__(self):
         self.recording = False
-        self.c = cv2.VideoCapture(0)
-        self.w = int(self.c.get(cv2.CAP_PROP_FRAME_WIDTH ))
-        self.h = int(self.c.get(cv2.CAP_PROP_FRAME_HEIGHT ))
-        
+        self.c = cv2.VideoCapture(0) # 0-> first camera (generally webcam), 1 -> second camera,...
+        self.w = int(self.c.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.h = int(self.c.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        print(self.w)
+        print(self.h)
         #Define Video Writer
         self.video_writer = cv2.VideoWriter("Video.avi", cv2.VideoWriter_fourcc(*'XVID'), 30, (self.w, self.h))
 
@@ -43,13 +45,16 @@ class Capture():
         print("Start Recording")
         self.capturing = True
         self.recording = True
+         #Define Video Writer
+        self.video_writer = cv2.VideoWriter(str(time.strftime("%Y%m%d-%H%M%S"))+".avi", cv2.VideoWriter_fourcc(*'XVID'), 30, (self.w, self.h))
 
     def endRecording(self):
         print ("End Recording")
         self.capturing = True
         self.recording = False
         self.video_writer.release()
-
+    
+    
     def quitApp(self):
         print ("Quit")
         self.capturing = False
@@ -170,7 +175,7 @@ class Window(QtWidgets.QWidget):
         if settings.value('FPS') is not None:
             self.slider_fps.setValue(int(settings.value('FPS')))
         else:
-            self.slider_fps.setValue(50)
+            self.slider_fps.setValue(30)
         self.AssignNewSliderValue(self, 'FPS', settings)
         self.slider_fps.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.slider_fps.valueChanged.connect(lambda: self.AssignNewSliderValue(self.slider_fps, 'FPS', settings))
@@ -200,9 +205,9 @@ class Window(QtWidgets.QWidget):
         
     def AssignNewSliderValue(self, obj, string, stgs):
         if string == 'Brightness':
-            self.capture.SetValueToCam(self.slider_brightness.value()/100, 'Brightness')
-            self.label_brightness.setText('Brightness = '+ str(self.slider_brightness.value()/100))
-            stgs.setValue('Brightness', self.slider_brightness.value())
+            self.capture.SetValueToCam(self.slider_brightness.value()/100, string)
+            self.label_brightness.setText(string + " = " + str(self.slider_brightness.value()/100))
+            stgs.setValue(string , self.slider_brightness.value())
         if string == 'Contrast':
             self.capture.SetValueToCam(self.slider_contrast.value()/100, 'Contrast')
             self.label_constrast.setText('Constrast = '+ str(self.slider_contrast.value()/100))
@@ -230,8 +235,6 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     
 
-    #Get Camera Settings from Config file
-    #CameraParameters = Configuration.ReadConfig()
 
     
     window = Window()
