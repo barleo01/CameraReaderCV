@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+
+"""Gui.py: Graphic User Interface."""
+
+__author__      = "Léonard Barras"
+__copyright__   = "Copyright 2018"
 
 import cv2
 from PyQt5 import QtGui, QtCore, QtWidgets
@@ -20,6 +26,10 @@ class Capture():
         self.h = int(self.c.get(cv2.CAP_PROP_FRAME_HEIGHT))
         
         #self.pumpON = False
+
+        #declare raspberry
+        if EMBEDDED:
+            self.pi = ctrlHW.Raspberry()
         
         print(self.w)
         print(self.h)
@@ -75,13 +85,11 @@ class Capture():
         if EMBEDDED:
             print("tet")
             if pumpON:
-                print("en")
                 pumpON = False
-                ctrlHW.StopPump()
+                self.pi.StopPump()
             else:
-                print("di")
                 pumpON = True
-                ctrlHW.StartPump()
+                self.pi.StartPump()
         else:
             print("Pump not supported")
         
@@ -92,6 +100,10 @@ class Capture():
         self.capturing = False
         cap = self.c
         self.video_writer.release()
+
+        if EMBEDDED:
+            self.pi.Clean()
+        
         cv2.destroyAllWindows()
         cap.release()
         QtCore.QCoreApplication.quit()
@@ -265,7 +277,10 @@ class Window(QtWidgets.QWidget):
 if __name__ == '__main__':
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    
+
+
     window = Window()
     #cv2.destroyAllWindows()
+        
+    
     sys.exit(app.exec_())
